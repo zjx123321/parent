@@ -1,4 +1,4 @@
-package com.zjx.partition;
+package com.zjx.offset;
 
 import com.zjx.demo.KafkaProperties;
 

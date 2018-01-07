@@ -2,10 +2,10 @@ package com.zjx.partition;
 
 import com.zjx.demo.KafkaProperties;
 
-public class KafkaConsumerDemo {
+public class KafkaConsumerDemo22 {
     public static void main(String[] args) throws InterruptedException {
 
-        Consumer consumerThread = new Consumer(KafkaProperties.TOPIC2);
+        Consumer2 consumerThread = new Consumer2(KafkaProperties.TOPIC2);
         consumerThread.start();
 
     }

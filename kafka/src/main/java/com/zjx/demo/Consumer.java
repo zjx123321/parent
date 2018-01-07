@@ -16,10 +16,10 @@ public class Consumer extends ShutdownableThread {
     public Consumer(String topic) {
         super("KafkaConsumerExample", false);
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.133.200:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "DemoConsumer");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.IntegerDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
@@ -32,10 +32,19 @@ public class Consumer extends ShutdownableThread {
     public void doWork() {
 
         consumer.subscribe(Collections.singletonList(this.topic));
-        ConsumerRecords<Integer, String> records = consumer.poll(1000);
+        ConsumerRecords<Integer, String> records = consumer.poll(10);
 //        System.out.println("消费者开始");
         for (ConsumerRecord<Integer, String> record : records) {
+//            try {
+//                Thread.sleep(2000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            if(record.key().intValue() == 5) {
+//                System.exit(0);
+//            }
             System.out.println("Partitons:" + record.partition() + " Received message: (" + record.key() + ", " + record.value() + ") at offset " + record.offset());
+//            consumer.commitAsync();
         }
     }
 
