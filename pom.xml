@@ -9,6 +9,7 @@
     <module>web</module>
       <module>kafka</module>
       <module>json</module>
+      <module>zookeeper</module>
   </modules>
   <packaging>pom</packaging>
 
