@@ -26,4 +26,16 @@ public class HelloController {
         return "Hello" + name;
     }
 
+    @RequestMapping(value = "/hi", method = RequestMethod.GET)
+    public String sayHi(@RequestParam("name") String name) {
+        logger.info("请求参数name:{}", name);
+        return "Hello" + name;
+    }
+
+    @RequestMapping(value = "/yes", method = RequestMethod.GET)
+    public String sayYes(@RequestParam("name") String name) {
+        logger.info("请求参数name:{}", name);
+        return "Hello" + name;
+    }
+
 }
