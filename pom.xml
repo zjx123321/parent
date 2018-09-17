@@ -10,6 +10,8 @@
       <module>kafka</module>
       <module>json</module>
       <module>zookeeper</module>
+      <module>java</module>
+    <module>spring-kafka</module>
   </modules>
   <packaging>pom</packaging>
 
