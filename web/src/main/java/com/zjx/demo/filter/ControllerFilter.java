@@ -1,16 +1,18 @@
 package com.zjx.demo.filter;
 
-import com.codahale.metrics.Timer;
-import com.zjx.demo.config.MetricConfig;
-import com.zjx.demo.controller.HelloController;
+import com.zjx.demo.utils.CustomMetric;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -20,16 +22,14 @@ import java.io.IOException;
 @WebFilter(urlPatterns = "/*")
 public class ControllerFilter implements Filter{
 
-    private Logger logger = LoggerFactory.getLogger(ControllerFilter.class);
+    static final Counter requests = Counter.build().name("dic_http_request_total").help("Total request.")
+            .labelNames("url", "method", "code").register();
 
-    @Resource
-    private MetricConfig.MeterFactory meterFactory;
+    static final Histogram requestLatencyHistogram = Histogram.build().labelNames("url", "method", "code")
+            .name("dic_http_requests_response_time").help("Request latency in seconds.")
+            .register();
 
-    @Resource
-    private MetricConfig.TimerFactory timerFactory;
-
-    @Resource
-    private MetricConfig.CounterFactory counterFactory;
+    private Histogram.Timer histogramRequestTimer;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -39,19 +39,25 @@ public class ControllerFilter implements Filter{
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-//        logger.info("请求url：{}", request.getRequestURI());
-        meterFactory.getMeter("meter:" + request.getRequestURI()).mark();
-        counterFactory.getCounter("counter:" + request.getRequestURI()).inc();
-        final Timer.Context context = timerFactory.getTimer("times:" + request.getRequestURI()).time();
-        try {
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+
+        if(request.getRequestURI().endsWith("prometheus")){
             filterChain.doFilter(servletRequest, servletResponse);
-        }finally {
-            context.stop();
+            return;
         }
+        histogramRequestTimer = requestLatencyHistogram.labels(request.getRequestURI(), request.getMethod(), String.valueOf(response.getStatus())).startTimer();
+        filterChain.doFilter(servletRequest, servletResponse);
+        histogramRequestTimer.observeDuration();
+        processRequest(request.getRequestURI(), request.getMethod(), String.valueOf(response.getStatus()));
     }
 
     @Override
     public void destroy() {
 
     }
+
+    public void processRequest(String... method){
+        requests.labels(method).inc();
+    }
+
 }
